@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 
+	"optics/pkg/utils"
 	optics "optics/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -36,25 +37,32 @@ to quickly create a Cobra application.`,
 		if sku != "" {
 			o.SetSKU(sku)
 		}
-		if speed != "" {
-			o.SetSpeed(speed)
-		}
-		if cable != "" {
-			o.SetCableType(cable)
+		if speed != "" && cable != "" {
+			cableSpeed := fmt.Sprintf("%v_%v", cable, speed)
+			// fmt.Println(cableSpeed)
+			cableType, connectorType, speedType, postFix := utils.GetOpticsQueryParams(cableSpeed)
+			// fmt.Println(cableType, connectorType, speedType)
+			o.SetCableType(cableType)
+			o.SetConnectoryType(connectorType)
+			o.SetSpeed(speedType)
+			o.SetPostFix(postFix)
 		}
 
 		// Get the Optics
 		o.GetOpticsWithCableTypeAndSpeed()
+		// for _, optic := range o.GetSelectedOptics() {
+		// 	fmt.Println(optic)
+		// }
 
-		fmt.Println(o.GetSelectedOptics())
+		fmt.Println(o.GetFilteredOptics())
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(getCmd)
 	getCmd.Flags().StringP("sku", "s", "", "Interested Device Model")
-	getCmd.Flags().StringP("speed", "v", "", "Speed of the Port")
-	getCmd.Flags().StringP("cable", "c", "", "Cable Type")
+	getCmd.Flags().StringP("speed", "v", "", "Speed of the Port - either 100G, 400G")
+	getCmd.Flags().StringP("cable", "c", "", "Cable Type - either SMD, SMP, MMD or MMP")
 
 	// Here you will define your flags and configuration settings.
 

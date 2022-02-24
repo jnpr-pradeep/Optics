@@ -21,6 +21,8 @@ type OpticDetails struct {
 	ModelType       string `json:"modelType"`
 	BreakoutCapable string `json:"breakoutCapable"`
 	TransceiverType string `json:"transceiverType"`
+	EOLFlag         string `json:"eolFlag"`
+	Standard        string `json:"standard"`
 }
 
 type OpticsToDevicesResp struct {

@@ -16,10 +16,14 @@ type OpticsObject struct {
 }
 
 type OpticsProcessor struct {
-	speed     string
-	sku       string
-	cableType string
-	distance  string
+	speed         string
+	sku           string
+	cableType     string
+	distance      string
+	connectorType string
+	postFix       []string
+
+	standard string
 
 	possibleOptics []string
 	selectedOptics []string
@@ -38,12 +42,28 @@ func (op *OpticsProcessor) SetCableType(cableType string) {
 	op.cableType = cableType
 }
 
+func (op *OpticsProcessor) SetConnectoryType(connectorType string) {
+	op.connectorType = connectorType
+}
+
 func (op *OpticsProcessor) SetDistance(distance string) {
 	op.distance = distance
 }
 
 func (op *OpticsProcessor) SetSpeed(speed string) {
 	op.speed = speed
+}
+
+func (op *OpticsProcessor) SetStandard(standard string) {
+	op.standard = standard
+}
+
+func (op *OpticsProcessor) SetPostFix(postFix []string) {
+	op.postFix = postFix
+}
+
+func (op *OpticsProcessor) GetPostFix() []string {
+	return op.postFix
 }
 
 func (op *OpticsProcessor) GetPossibleOptics() []string {
@@ -130,8 +150,19 @@ func getAllOptics() OpticsResp {
 
 func (op *OpticsProcessor) processOptics(optics []OpticDetails) {
 	for _, optic := range optics {
+		// Filter the End Of Life - optics
+		// if optic.EOLFlag == "N" {
+		// 	continue
+		// }
+		// Check for the standard - if not - we should filter this out optic.
+		// if !strings.Contains(optic.Standard, op.standard) {
+		// 	continue
+		// }
+
+		// if ContainsKey(optic.CableType, []string{op.cableType}) &&
+		// 	IsDistanceSupported(optic.Distance) {
 		if ContainsKey(optic.CableType, []string{op.cableType}) &&
-			IsDistanceSupported(optic.Distance) {
+			ContainsKey(optic.ConnectorType, []string{op.connectorType}) {
 			// fmt.Println(optic.ModelNum, optic.Distance, optic.TransceiverType, optic.CableType)
 			op.appendPossibleOptics(optic.ModelNum)
 		}
@@ -172,7 +203,7 @@ func (op *OpticsProcessor) GetOpticsWithCableTypeAndSpeed() {
 
 	for _, modelType := range opticsResp.OpticsResp {
 		if ContainsKey(modelType.ModelType, []string{op.speed}) {
-			// Process optics for this model type
+			// Process optics for this model type - i.e speed
 			// fmt.Println(modelType.ModelType)
 			op.processOptics(modelType.Optics)
 		}
@@ -201,4 +232,14 @@ func (op *OpticsProcessor) GetOptics() {
 		}
 	}
 
+}
+
+func (op *OpticsProcessor) GetFilteredOptics() string {
+	for _, pf := range op.postFix {
+		so := EndsWithKey(pf, op.selectedOptics)
+		if so != "" {
+			return so
+		}
+	}
+	return ""
 }
